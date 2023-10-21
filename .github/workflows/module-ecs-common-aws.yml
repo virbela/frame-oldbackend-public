@@ -1,0 +1,115 @@
+name: Development Build and Deploy Signaling and Authenticaion Containers
+
+on:
+  workflow_call:
+    inputs:
+      AWSRegion:
+        required: true
+        type: string
+      AWSECR:
+        required: true
+        type: string
+      DockerName:
+        required: false
+        type: string
+        default: "${GITHUB_REF_NAME##*/}"
+      DeploymentName:
+        required: false
+        type: string
+        default: "${GITHUB_REF_NAME##*/}"
+    secrets:
+      AWS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  signaling-ecs-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set env variable for ref tag
+        run: |
+          echo "DEPLOYMENT_NAME=$(echo ${{ inputs.DeploymentName }})" >> $GITHUB_ENV
+          echo "DOCKER_NAME=$(echo ${{ inputs.DockerName }})" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials to use inputs.AWSRegion region
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.AWSRegion }}
+
+      - name: Download task definition for signaling service
+        run: |
+          aws ecs describe-task-definition --task-definition signaling-${{ env.DEPLOYMENT_NAME }} \
+          --query taskDefinition > task-definition.json
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        id: rendertask-signaling
+        with:
+          task-definition: task-definition.json
+          container-name: signaling
+          image: "${{ inputs.AWSECR }}.dkr.ecr.us-east-1.amazonaws.com/signaling/${{ env.DOCKER_NAME }}:latest"
+
+      - name: Preserve ECR Task file
+        uses: actions/upload-artifact@v3
+        with:
+          name: signaling-ecr-task-${{ inputs.AWSRegion }}.json
+          path: task-definition.json
+          retention-days: 5
+          if-no-files-found: error
+      
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.rendertask-signaling.outputs.task-definition }}
+          service: signaling
+          cluster: ${{ env.DEPLOYMENT_NAME }}
+          wait-for-service-stability: true
+          force-new-deployment: true
+
+  authentication-ecs-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set env variable for ref tag
+        run: |
+          echo "DEPLOYMENT_NAME=$(echo ${{ inputs.DeploymentName }})" >> $GITHUB_ENV
+          echo "DOCKER_NAME=$(echo ${{ inputs.DockerName }})" >> $GITHUB_ENV
+ 
+      - name: Configure AWS credentials to use inputs.AWSRegion region
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.AWSRegion }}
+
+      - name: Download task definition for authentication
+        run: |
+          aws ecs describe-task-definition --task-definition authentication-${{ env.DEPLOYMENT_NAME }} \
+          --query taskDefinition > task-definition.json
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        id: rendertask-authentication
+        with:
+          task-definition: task-definition.json
+          container-name: authentication
+          image: ${{ inputs.AWSECR }}.dkr.ecr.us-east-1.amazonaws.com/authentication/${{ env.DOCKER_NAME }}:latest
+
+      - name: Preserve ECR Task file
+        uses: actions/upload-artifact@v3
+        with:
+          name: authentication-ecr-task-${{ inputs.AWSRegion }}.json
+          path: task-definition.json
+          retention-days: 5
+          if-no-files-found: error
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.rendertask-authentication.outputs.task-definition }}
+          service: authentication
+          cluster: ${{ env.DEPLOYMENT_NAME }}
+          wait-for-service-stability: true
+          force-new-deployment: true

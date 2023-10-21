@@ -1,0 +1,106 @@
+@import url("https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css");
+
+/* body {
+  background-color: black;
+} */
+
+/* Frame heading */
+.frameHeading {
+  padding-left: 5em;
+  color: white;
+  text-align: center;
+}
+
+/* Frame stats */
+.table {
+  color: white;
+  display: table;
+  font-size: 0.5em;
+}
+
+.table-row {
+  display: table-row;
+}
+
+/* Voice zones */
+select {
+  position: absolute;
+  right: 0px;
+}
+
+/* Media stream toggles */
+.localMediaControls {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  margin: auto;
+}
+
+.localMediaControls > img {
+  cursor: pointer;
+}
+
+/* Remote peer medias */
+.remoteMediaContainer {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 25%));
+  gap: 1px;
+  grid-auto-flow: dense;
+  justify-content: center;
+  align-items: center;
+}
+
+video[data-remotepeer][data-mediasource="webcam"] {
+  width: 100%;
+}
+
+/* Local media */
+video[data-localVideo="local"][data-mediaSource="webcam"] {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  bottom: 2.5em;
+  left: 2.5em;
+  height: 5em;
+  border: solid 1px white;
+  opacity: 0.85;
+  background-color: black;
+  pointer-events: none;
+}
+
+.localAudioLevel {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  bottom: 3.2em;
+  left: 0.5em;
+  width: 1em;
+  height: 5em;
+  border: solid 1px white;
+  opacity: 0.85;
+  pointer-events: none;
+  background: -webkit-linear-gradient(
+    #e21d1d 4%,
+    #ff9d00 12%,
+    #fff200 22%,
+    #f2ea00 37%,
+    #52b152 59%,
+    #52b152 59%,
+    #008a00 79%
+  );
+}
+
+.localAudioLevel > .meter {
+  background-color: black;
+  height: 100%;
+}
+
+@media only screen and (max-width: 800px) {
+  video.asset-video[data-localVideo="local"][data-mediaSource="webcam"] {
+    width: 9em;
+    right: 0px;
+    left: unset;
+    bottom: 56px;
+  }
+}

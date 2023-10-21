@@ -1,0 +1,40 @@
+FROM node:lts
+
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    apt-get clean
+
+WORKDIR /container
+RUN mkdir -p app/node_modules
+RUN mkdir -p app/webapp/dist
+# ensure node user can edit node_modules folder
+RUN chown -R node /container
+USER node
+# With the volume mounts used in our docker-compose files, /app/node_modules
+# persists between different builds and this can create an invalid dependencies state.
+# Instead, we leave /app/node_modules (and its volume mount) empty and store an
+# immutable copy in the parent container folder. NodeJS module resolution automatically
+# climbs the directory tree so app runs as if nothing is different
+COPY --chown=node:node ./frame/package*.json ./
+RUN npm ci
+ENV PATH=/container/node_modules/.bin:$PATH
+ENV insecureport=8080
+ENV secureport=8443
+
+WORKDIR /container/app
+COPY --chown=node:node ./frame/package*.json ./
+COPY --chown=node:node ./docker/signaling.env ../docker/
+COPY --chown=node:node ./frame/babel.config.json ./
+COPY --chown=node:node ./frame/secrets/ ./secrets/
+COPY --chown=node:node ./frame/api/ ./api/
+COPY --chown=node:node ./frame/bin/ ./bin/
+COPY --chown=node:node ./frame/libs/ ./libs/
+COPY --chown=node:node ./frame/webapp/ ./webapp/
+
+ENTRYPOINT ["/bin/bash", "-c", "npm run prod:api \
+                                --announceip=`curl --silent checkip.amazonaws.com` \
+                                --sslcrt=/etc/letsencrypt/live/framevr.io/fullchain.pem \
+                                --sslkey=/etc/letsencrypt/live/framevr.io/privkey.pem \
+                                --insecureport=${insecureport} \
+                                --secureport=${secureport} \
+                                --apiserver='0.0.0.0' "]

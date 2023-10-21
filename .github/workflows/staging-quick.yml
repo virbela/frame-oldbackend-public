@@ -1,0 +1,65 @@
+name: Staging Deployment for Quick Interface Only
+
+on:
+  push:
+    tags:
+      - quick/staging
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  webapp:
+    uses: ./.github/workflows/module-webapp-aws.yml
+    with:
+      S3BaseName: ${GITHUB_REF_NAME##*/}.framevr.io
+      MainlineBuildCommand: "build:dev"
+      QuickBuildCommand: "build:dev:quick"
+      enableMainline: false
+      enableQuick: true
+      ImmersServer: "https://i.${GITHUB_REF_NAME##*/}.framevr.io"
+      BrandingName: "${GITHUB_REF_NAME##*/} Frame"
+      OutLink: "https://${GITHUB_REF_NAME##*/}.framevr.io"
+      MetaImage: "https://${{GITHUB_REF_NAME##*/}.framevr.io/assets/meta-image.png"
+      FirebaseAPIKey: ${{ secrets.STAGING_FIREBASE_API_KEY }}
+      FirebaseProjectID: ${{ secrets.STAGING_FIREBASE_PROJECT_ID }}
+      FirebaseMessagingSenderId: ${{ secrets.STAGING_FIREBASE_MESSAGING_SENDER_ID }}
+      FirebaseAppId: ${{ secrets.STAGING_FIREBASE_APP_ID }}
+      GoogleClientId: ${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
+      CloudinaryUploadPreset: ${{ secrets.STAGING_CLOUDINARY_UPLOAD_PRESET }}
+      Plausible: ${{ secrets.STAGING_PLAUSIBLE }}
+      QuickHelpMainId: ${{ secrets.STAGING_QUICKHELP_MAIN_ID }}
+      QuickHelpGroupId: ${{ secrets.STAGING_QUICKHELP_GROUP_ID }}
+    secrets:
+      AWS_KEY_ID: ${{ secrets.STAGING_AWS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+      CloudfrontDistribution: ${{ secrets.STAGING_MAINLINE_CLOUDFRONT }}
+
+  healthcheck:
+    runs-on: ubuntu-latest
+    needs:
+      - webapp
+
+    steps:
+      - name: Quick Interface Webapp Health Check
+        uses: jtalk/url-health-check-action@v2
+        with:
+          url: https://quick.${GITHUB_REF_NAME##*/}.framevr.io
+          follow-redirect: true
+          max-attempts: 15
+          retry-delay: 15s
+      - name: API Health Check
+        uses: jtalk/url-health-check-action@v2
+        with:
+          url: https://api.quick.${GITHUB_REF_NAME##*/}.framevr.io/uptime
+          follow-redirect: true
+          max-attempts: 15
+          retry-delay: 15s
+      - name: Immers server Health Check
+        uses: jtalk/url-health-check-action@v2
+        with:
+          url: https://i.${GITHUB_REF_NAME##*/}.framevr.io/auth/login
+          max-attempts: 15
+          retry-delay: 15s
+          retry-all: true

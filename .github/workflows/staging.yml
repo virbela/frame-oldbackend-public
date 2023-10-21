@@ -1,0 +1,103 @@
+name: Staging Deployment for Frame
+
+on:
+  push:
+    branches:
+      - staging
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  webapp:
+    uses: ./.github/workflows/module-webapp-aws.yml
+    with:
+      S3BaseName: ${GITHUB_REF_NAME##*/}.framevr.io
+      MainlineBuildCommand: "build"
+      QuickBuildCommand: "build:quick"
+      enableMainline: true
+      enableMainlineSourcemaps: true
+      enableQuick: true
+      enableCompression: true
+      ImmersServer: "https://i.${GITHUB_REF_NAME##*/}.framevr.io"
+      BrandingName: "${GITHUB_REF_NAME##*/}"
+      OutLink: "https://${GITHUB_REF_NAME##*/}.framevr.io"
+      Description: "(Staging) Immersive presentations and meetings - right from the browser on desktop, mobile, and VR"
+      ShortDescription: "(Staging) FRAME is a space for immersive presentations and meetings - right from a browser"
+      HomeRedirect: '"https://learn.framevr.io"'
+      MetaImage: "https://${GITHUB_REF_NAME##*/}.framevr.io/assets/meta-image.png"
+      FirebaseAPIKey: "AIzaSyDfrulJsRqG-1RE07kpJtIZYBjUmZql4Os"
+      FirebaseProjectID: "frame-vr-dev"
+      FirebaseMessagingSenderId: "196341899052"
+      FirebaseAppId: "1:196341899052:web:a4b10863c23ced4ecad689"
+      GoogleClientId: "196341899052-nn737pfgondu561qrqvgrijei6qiq65u.apps.googleusercontent.com"
+      CloudinaryUploadPreset: "aufhw4y7"
+      Plausible: "framevr.io"
+      QuickHelpMainId: "63e10679a84cb3206267dfd8"
+      QuickHelpGroupId: "ZAvHnj6NyurYNZH6t"
+    secrets:
+      AWS_KEY_ID: ${{ secrets.STAGING_AWS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+      MainlineCloudfrontDistribution: ${{ secrets.STAGING_MAINLINE_CLOUDFRONT }}
+      QuickCloudfrontDistribution: ${{ secrets.STAGING_QUICK_CLOUDFRONT }}
+
+  dockers:
+    uses: ./.github/workflows/module-dockers-aws.yml
+    with:
+      AWSRegion: us-east-1
+    secrets:
+      AWS_KEY_ID: ${{ secrets.STAGING_AWS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+
+  awsecs-common:
+    uses: ./.github/workflows/module-ecs-common-aws.yml
+    needs: dockers
+    with:
+      AWSECR: 277920618471
+      AWSRegion: us-east-1
+    secrets:
+      AWS_KEY_ID: ${{ secrets.STAGING_AWS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+
+  awsecs-regional:
+    uses: ./.github/workflows/module-ecs-regional-aws.yml
+    needs: dockers
+    with:
+      AWSECR: 277920618471
+      AWSRegion: "['us-east-1']"
+    secrets:
+      AWS_KEY_ID: ${{ secrets.STAGING_AWS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+
+  healthcheck:
+    runs-on: ubuntu-latest
+    needs:
+      - webapp
+      - awsecs-regional
+      - awsecs-common
+    steps:
+      - name: Set env variable for ref tag
+        run: |
+          echo "DEPLOYMENT_NAME=$(echo ${GITHUB_REF_NAME##*/})" >> $GITHUB_ENV
+      - name: Webapp Health Check
+        uses: jtalk/url-health-check-action@v2
+        with:
+          url: "https://${{ env.DEPLOYMENT_NAME }}.framevr.io"
+          follow-redirect: true
+          max-attempts: 15
+          retry-delay: 15s
+      - name: API Health Check
+        uses: jtalk/url-health-check-action@v2
+        with:
+          url: "https://api.${{ env.DEPLOYMENT_NAME }}.framevr.io/uptime"
+          follow-redirect: true
+          max-attempts: 15
+          retry-delay: 15s
+      - name: Immers server Health Check
+        uses: jtalk/url-health-check-action@v2
+        with:
+          url: "https://i.${{ env.DEPLOYMENT_NAME }}.framevr.io/auth/login"
+          max-attempts: 15
+          retry-delay: 15s
+          retry-all: true

@@ -1,0 +1,83 @@
+<html>
+  <body>
+    <h1>Use this page to debug your microphone</h1>
+
+    <script type="text/javascript">
+      navigator.mediaDevices
+        .getUserMedia({ audio: true, video: false })
+        .then(async (stream) => {
+          audioContext = new AudioContext();
+          microphone = audioContext.createMediaStreamSource(stream);
+          analyser = audioContext.createAnalyser();
+          analyser.smoothingTimeConstant = 0.3;
+          analyser.fftSize = 1024;
+          bufferLength = analyser.frequencyBinCount;
+          dataArray = new Uint8Array(bufferLength);
+          analyser.getByteTimeDomainData(dataArray);
+          console.log(audioContext);
+
+          microphone.connect(analyser);
+
+          canvas = document.getElementById("test");
+          canvasCtx = canvas.getContext("2d");
+
+          function draw() {
+            function random_rgba() {
+              var o = Math.round,
+                r = Math.random,
+                s = 255;
+              return (
+                "rgba(" +
+                o(r() * s) +
+                "," +
+                o(r() * s) +
+                "," +
+                o(r() * s) +
+                "," +
+                r().toFixed(1) +
+                ")"
+              );
+            }
+
+            analyser.getByteTimeDomainData(dataArray);
+
+            canvasCtx.fillStyle = "rgba(255,255,255,0)";
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = random_rgba();
+
+            canvasCtx.beginPath();
+
+            var sliceWidth = (canvas.width * 1.0) / bufferLength;
+            var x = 0;
+
+            for (var i = 0; i < bufferLength; i++) {
+              var v = dataArray[i] / 128.0;
+              var y = (v * canvas.height) / 2;
+
+              if (i === 0) {
+                canvasCtx.moveTo(x, y);
+              } else {
+                canvasCtx.lineTo(x, y);
+              }
+
+              x += sliceWidth;
+            }
+
+            canvasCtx.lineTo(canvas.width, canvas.height / 2);
+            canvasCtx.stroke();
+
+            // Redraw up to 4fps
+            setTimeout(draw, 250);
+          }
+
+          draw();
+        })
+        .catch((err) => {
+          alert(err);
+        });
+    </script>
+    <canvas id="test" style="border: 3px"></canvas>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "target": "esnext",
+    "lib": ["DOM", "esnext"],
+    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "not_really_used_but_vscode_needs_this_for_compat_with_allowJs",
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "paths": {
+      "@/*": ["./vue/*"],
+      "@assets/*": ["./vue/assets/*"],
+      "@components/*": ["./vue/components/*"],
+      "@core/*": ["./core/*"],
+      "@extension/*": ["./extension/*"],
+      "@layouts/*": ["./vue/layouts/*"],
+      "@pages/*": ["./vue/pages/*"],
+      "@plugins/*": ["./vue/plugins/*"],
+      "@mainline/*": ["./mainline/*"],
+      "@stage/*": ["./stage/*"],
+      "@utils/*": ["./vue/utils/*"],
+      "@webapp/*": ["./*"],
+      "@workers/*": ["./workers/*"]
+    }
+  },
+  "types": [
+    "babylonjs",
+    "vuetify",
+    "babylonjs-loaders",
+    "gapi",
+    "gapi.calendar",
+    ""
+  ],
+  "include": ["./**/*.ts", "./**/*.js", "./**/*.vue"],
+  "exclude": ["node_modules", "dist"]
+}

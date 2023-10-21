@@ -1,0 +1,61 @@
+<html>
+  <body>
+    <h1>Use this page to debug server transports</h1>
+    <div id="metrics"></div>
+    <script type="text/javascript">
+      let websocket;
+      if (location.protocol === "http:") {
+        websocket = new WebSocket(
+          "ws://" + location.hostname + ":" + location.port
+        );
+      } else {
+        websocket = new WebSocket(
+          "wss://" + location.hostname + ":" + location.port
+        );
+      }
+      websocket.onopen = () => {
+        websocket.send(
+          JSON.stringify({ type: "requestIdentity", message: {} })
+        );
+      };
+      websocket.onmessage = (message) => {
+        const data = JSON.parse(message.data);
+        if (data.type === "identity") {
+          websocket.send(JSON.stringify({ type: "subscribeToMetrics" }));
+        }
+        if (data.type === "metrics") {
+          updateBody(data.data.rooms);
+        }
+      };
+      const updateBody = function (data) {
+        console.log(data);
+        document.getElementById("metrics").innerHTML = "";
+        Object.keys(data).map((room) => {
+          addRoom(data[room], room);
+        });
+      };
+      const addRoom = function (room, roomName) {
+        const outerDiv = document.createElement("div");
+        outerDiv.appendChild(createDiv("Room: " + roomName));
+        [
+          "transports",
+          "routers",
+          "consumers",
+          "dataConsumers",
+          "dataProducers",
+          "transports",
+        ].map((metric) => {
+          outerDiv.appendChild(createDiv(`${metric}: ${room[metric].length}`));
+          document.getElementById("metrics").appendChild(outerDiv);
+        });
+        var br = document.createElement("br");
+        outerDiv.appendChild(br);
+      };
+      const createDiv = function (body) {
+        const div = document.createElement("div");
+        div.innerHTML = body;
+        return div;
+      };
+    </script>
+  </body>
+</html>

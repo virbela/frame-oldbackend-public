@@ -1,0 +1,80 @@
+version: "2"
+services:
+  signaling:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.signaling
+    env_file:
+      - signaling.env
+    restart: on-failure
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+        reservations:
+          cpus: "2"
+    network_mode: host
+    volumes:
+      - ../frame:/container/app
+      # separate the host machine node_modules from the docker image
+      - /container/app/node_modules
+    entrypoint: ["/bin/bash", "-c", "npm run dev:sourcemaps"]
+
+  ingress:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ingress
+    depends_on:
+      - signaling
+    restart: always
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+        reservations:
+          cpus: "4"
+    network_mode: host
+    entrypoint: [
+        "/bin/bash",
+        "-c",
+        "./frame-mediasoup \
+        -a 127.0.0.1 \
+        -i true \
+        -e false \
+        -u 127.0.0.1:1188 \
+        -w 4 \
+        -t false \
+        -r us-west-2 \
+        -p 10000",
+      ]
+
+  egress:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.egress
+    depends_on:
+      - signaling
+    restart: always
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+        reservations:
+          cpus: "4"
+    network_mode: host
+    entrypoint: [
+        "/bin/bash",
+        "-c",
+        "./frame-mediasoup \
+        -a 127.0.0.1 \
+        -i false \
+        -e true \
+        -u 127.0.0.1:1188 \
+        -w 4 \
+        -t false \
+        -r us-west-2 \
+        -p 20000",
+      ]

@@ -1,0 +1,23 @@
+version: '2'
+services: 
+ 
+ unittest:
+  init: true
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.unittest
+  deploy:
+    resources:
+      limits:
+        cpus: "4.0"
+      reservations:
+        cpus: "1.0"
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+  volumes:
+    - ../frame:/container/app
+    # separate the host machine node_modules from the docker image
+    - /container/app/node_modules
+  network_mode: host

@@ -1,0 +1,86 @@
+{
+  "private": true,
+  "name": "public project",
+  "version": "0.0.1",
+  "author": "Fork me!",
+  "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/somewhere out there"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
+  "config": {
+    "secureport": "8443",
+    "insecureport": "8080",
+    "apissl": "true",
+    "apiserver": "0.0.0.0"
+  },
+  "scripts": {
+    "build": "node webapp/webpack.js --mode=production",
+    "build:sourcemaps": "node webapp/webpack.js --mode=production --sourcemaps",
+    "build:quick": "node webapp/webpack.js --mode=production --build=quick",
+    "build:dev": "node webapp/webpack.js --mode=development",
+    "build:dev:sourcemaps": "node webapp/webpack.js --mode=development --sourcemaps",
+    "build:dev:quick": "node webapp/webpack.js --mode=development --build=quick",
+    "build:library": "node webapp/webpack.js --mode=production --build=library",
+    "build:diag": "node webapp/webpack.js --mode=production --build=diag --sourcemaps",
+    "build:diag:sourcemaps": "node webapp/webpack.js --mode=production --build=diag --sourcemaps",
+    "build:msteams": "node webapp/webpack.js --mode=development --build=msteams",
+    "build:stato": "cross-env STATOSCOPE=TRUE node webapp/webpack.js --mode=production --skipSourcemaps",
+    "clean": "rm -rf webapp/dist",
+    "clean:all": "rm -rf webapp/dist; rm -rf node_modules; git reset --hard",
+    "clean:most": "rm -rf webapp/dist; rm -rf node_modules",
+    "debug": "nodemon app.ts & sleep 5 && node webapp/webpack.js --mode=development --watch",
+    "debug:api": "nodemon bin/api.ts",
+    "debug:webapp": "webpack serve --config ./webapp/webpack.js --mode=development --devtool eval-source-map --color",
+    "dev": "nodemon -r dotenv/config bin/api.ts dotenv_config_path=../docker/signaling.env & sleep 5 && node webapp/webpack.js --mode=development --watch",
+    "dev:sourcemaps": "nodemon -r dotenv/config bin/api.ts dotenv_config_path=../docker/signaling.env & sleep 5 && node webapp/webpack.js --mode=development --sourcemaps --watch",
+    "dev:api": "nodemon bin/api.ts",
+    "dev:egress": "(cd ../rust && cargo egress)",
+    "dev:ingress": "(cd ../rust && cargo ingress)",
+    "dev:webapp": "webpack serve --config ./webapp/webpack.js --mode=development --devtool eval-source-map --color --progress",
+    "dev:webapp:library": "webpack serve --config ./webapp/webpack.js --mode=development --devtool eval-source-map --color --entry-reset ./library/index.ts",
+    "dev:webapp:quick": "webpack serve --config ./webapp/webpack.js --mode=development --devtool eval-source-map --color --entry-reset ./quick/index.ts ./core/index.js",
+    "dev:msteams": "nodemon bin/api.ts & sleep 5 && node webapp/webpack.js --mode=development --build=msteams --watch",
+    "dev:diag": "nodemon -r dotenv/config bin/api.ts dotenv_config_path=../docker/signaling.env & sleep 5 && node webapp/webpack.js --mode=development --build=diag --watch",
+    "dev:quick": "nodemon -r dotenv/config bin/api.ts dotenv_config_path=../docker/signaling.env & sleep 5 && node webapp/webpack.js --mode=development --build=quick --watch",
+    "doc": "jsdoc -r -P package.json -R README.md -d doc -c doc/.jsdoc.config api/ bin/ doc/diagrams/ libs/ webapp/babylon/ webapp/core/ webapp/diag/ webapp/msteams/ webapp/stage/ webapp/vue/ webapp/workers/ webapp/mainline/ webapp/quick/",
+    "graph": "node webapp/vue/mermaid.js",
+    "lint": "eslint --no-error-on-unmatched-pattern ./bin/**/*.{js,ts} ./libs/**/*.{js,ts} ./test/**/*.js ./webapp/{core,babylon,vue,stage,mainline,quick,diag}/**/*.{js,ts,vue,workers}",
+    "lint:fix": "eslint --fix --no-error-on-unmatched-pattern ./bin/**/*.{js,ts} ./libs/**/*.{js,ts} ./test/**/*.js ./webapp/{core,babylon,vue,stage,mainline,quick,diag}/**/*.{js,ts,vue,workers}",
+    "lint:fixsingle": "prettier",
+    "lint:single": "prettier --write",
+    "prepare": "",
+    "test": "jest --runInBand",
+    "test-update": "jest --runInBand --updateSnapshot",
+    "prod:api": "NODE_ENV=production node -r ts-node/register --prof bin/api.ts",
+    "debug:webpack": "NODE_ENV=test node --inspect webapp/webpack.js --build=test --watch",
+    "type": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vue-tsc --noEmit -p ./webapp/tsconfig.json"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "msteams": {
+    "teamsAppId": "unknown stuff"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "app.js",
+      "config.js",
+      "./api/*",
+      "./libs/*",
+      "./bin/*"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": "eslint"
+  },
+  "jest": {
+    "verbose": true,
+    "preset": "jest-puppeteer"
+  }
+}

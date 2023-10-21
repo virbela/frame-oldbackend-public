@@ -1,0 +1,8 @@
+[alias]
+ingress = "run -- -a 127.0.0.1 -i true -e false -u localhost:1188 -w 4 -t false -p 10000 -r local"
+egress = "run -- -a 127.0.0.1 -i false -e true -u localhost:1188 -w 4 -t false -p 20000 -r  local"
+
+
+
+
+

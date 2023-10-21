@@ -1,0 +1,63 @@
+version: '2'
+services: 
+ 
+ signaling:
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.signaling
+  env_file:
+    - signaling.env
+  restart: "no"
+  volumes:
+    - /etc/letsencrypt:/etc/letsencrypt
+  ports:
+    - ${SIGNALING_SECURED}:${SIGNALING_SECURED}
+  entrypoint: ["/bin/bash", "-c", "npm run build && \
+                                   npm run prod:signaling \
+				   --announceip=`curl --silent checkip.amazonaws.com` \
+                                   --secureport='${SIGNALING_SECURED}' \
+                                   --sslkey=/etc/letsencrypt/live/test.framevr.io/privkey.pem \
+                                   --sslcrt=/etc/letsencrypt/live/test.framevr.io/fullchain.pem"]
+ 
+ ingress:
+  build: 
+    context: ..
+    dockerfile: docker/Dockerfile.ingress
+  depends_on:
+    - signaling
+  restart: "no"
+  ports:
+    - ${INGRESS_START}-${INGRESS_END}:${INGRESS_START}-${INGRESS_END}/tcp
+    - ${INGRESS_START}-${INGRESS_END}:${INGRESS_START}-${INGRESS_END}/udp
+  entrypoint: ["/bin/bash", "-c", "./frame-mediasoup \
+                                      -a `curl --silent checkip.amazonaws.com` \
+                                      -i true \
+                                      -e false \
+                                      -u signaling:1188 \
+                                      -w 1 \
+                                      -t true \
+                                      -r local \
+                                      -p ${INGRESS_START}"]
+
+  egress:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.egress
+    depends_on:
+      - signaling
+    restart: "no"
+    ports:
+      - ${EGRESS_START}-${EGRESS_END}:${EGRESS_START}-${EGRESS_END}/tcp
+      - ${EGRESS_START}-${EGRESS_END}:${EGRESS_START}-${EGRESS_END}/udp
+    entrypoint: [
+        "/bin/bash",
+        "-c",
+        "./frame-mediasoup \
+        -a `curl --silent checkip.amazonaws.com` \
+        -i false \
+        -e true \
+        -u signaling:1188 \
+        -w 1 \
+        -t true \
+        -r local \
+        -p ${EGRESS_START}"]

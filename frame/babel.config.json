@@ -1,0 +1,13 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "exclude": ["transform-regenerator"],
+        "useBuiltIns": "usage",
+        "corejs": "3"
+      }
+    ],
+    "@babel/preset-typescript"
+  ]
+}

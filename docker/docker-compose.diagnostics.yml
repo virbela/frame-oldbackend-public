@@ -1,0 +1,18 @@
+version: "2"
+services:
+  signaling:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.signaling
+    env_file:
+      - signaling.env
+    restart: on-failure
+    privileged: true
+    volumes:
+      - ../frame:/container/app
+      # separate the host machine node_modules from the docker image
+      - /container/app/node_modules
+    ports:
+      - 8080:8080
+      - 8443:8443
+    entrypoint: ["/bin/bash", "-c", "npm run dev:diag"]

@@ -1,0 +1,285 @@
+/* loading screen starts */
+#loading-screen {
+  background-color: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99999;
+}
+
+#loading-screen .frame-logo {
+  background: no-repeat center center;
+  background-size: 204px 220px;
+  margin: -24px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  visibility: hidden;
+}
+
+#loading-screen .frame-logo .loading {
+  display: block;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 20px;
+  margin: 136px 0 0 -60px;
+  color: black;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 3px;
+}
+#loading-screen .frame-logo .noFrameFound {
+  display: block;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  width: 280px;
+  height: 20px;
+  margin: 135px 0 0 -140px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+#loading-screen .frame-logo a {
+  text-decoration: none;
+}
+#loading-screen #preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+#loading-screen #preloader .loader {
+  display: block;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  width: 456px;
+  height: 456px;
+  margin: -240px 0 0 -240px;
+  border-radius: 50%;
+  border: 12px solid transparent;
+  border-top-color: var(--brand-second);
+  -webkit-box-sizing: unset;
+  box-sizing: unset;
+  -webkit-animation: loading-screen-spin 2s linear infinite;
+  animation: loading-screen-spin 10s linear infinite;
+}
+#loading-screen #preloader .loader:before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  border-radius: 50%;
+  border: 9px solid transparent;
+  border-top-color: var(--brand-first);
+  -webkit-animation: loading-screen-spin 3s linear infinite;
+  animation: loading-screen-spin 5s linear infinite;
+}
+#loading-screen #preloader .loader:after {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: 21px;
+  right: 21px;
+  bottom: 21px;
+  border-radius: 50%;
+  border: 6px solid transparent;
+  border-top-color: var(--brand-third);
+  -webkit-animation: loading-screen-spin 1.5s linear infinite;
+  animation: loading-screen-spin 2.5s linear infinite;
+}
+
+.powered-by-frame-text {
+  position: fixed !important;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  margin: auto auto;
+  bottom: 32px !important;
+  color: #878787;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 3px !important;
+  font-family: "Poppins", sans-serif !important;
+}
+
+.logo-width {
+  width: 100%;
+}
+
+@-webkit-keyframes loading-screen-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes loading-screen-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+.spinnerContainer {
+  /* //needs to be ported
+  // display: flex; */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  z-index: -50;
+}
+
+.spinner {
+  display: inline-block;
+  position: fixed;
+  width: 90px;
+  z-index: -50;
+  text-align: center;
+  top: calc(50vh - 35px);
+  left: calc(50vw - 45px);
+  visibility: visible;
+}
+
+.spinner > div {
+  width: 22px;
+  height: 22px;
+  background-color: var(--brand-third);
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+  background-color: var(--brand-second);
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+  background-color: var(--brand-first);
+}
+
+@media only screen and (max-width: 800px) {
+  #loading-screen .frame-logo {
+    /*TODO: update paths*/
+    background: url("../stage/branding/logo.svg") no-repeat center center;
+    background-size: 102px 110px;
+    margin: -12px 0;
+  }
+  #loading-screen .frame-logo .loading {
+    width: 80px;
+    height: 10px;
+    margin: 68px 0 0 -40px;
+    font-weight: 400;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+  #loading-screen .frame-logo .noFrameFound {
+    width: 180px;
+    margin: 67px 0 0 -90px;
+    font-weight: 400;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  #loading-screen #preloader .loader {
+    width: 228px;
+    height: 228px;
+    margin: -120px 0 0 -120px;
+    border: 6px solid transparent;
+    border-top-color: var(--brand-second);
+    -webkit-animation: loading-screen-spin 2s linear infinite;
+    animation: loading-screen-spin 10s linear infinite;
+  }
+  #loading-screen #preloader .loader:before {
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    border: 4.5px solid transparent;
+    border-top-color: var(--brand-first);
+    -webkit-animation: loading-screen-spin 3s linear infinite;
+    animation: loading-screen-spin 5s linear infinite;
+  }
+  #loading-screen #preloader .loader:after {
+    top: 10.5px;
+    left: 10.5px;
+    right: 10.5px;
+    bottom: 10.5px;
+    border: 3px solid transparent;
+    border-top-color: var(--brand-third);
+    -webkit-animation: loading-screen-spin 1.5s linear infinite;
+    animation: loading-screen-spin 2.5s linear infinite;
+  }
+  @media only screen and (max-width: 800px) {
+    video.asset-video[data-localVideo="local"][data-mediaSource="webcam"] {
+      width: 9em;
+      right: 0px;
+      left: unset;
+      bottom: 56px;
+    }
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .isMobile
+    video.asset-video[data-localVideo="local"][data-mediaSource="webcam"] {
+    left: unset;
+    right: 1em;
+  }
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%,
+  80%,
+  100% {
+    -webkit-transform: scale(0);
+  }
+  40% {
+    -webkit-transform: scale(1);
+  }
+}
+
+@keyframes sk-bouncedelay {
+  0%,
+  80%,
+  100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  40% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,42 @@
+<html>
+  <body>
+    <h1>Use this page to debug your microphone</h1>
+
+    <script type="text/javascript">
+      navigator.mediaDevices
+        .getUserMedia({ audio: true, video: false })
+        .then(async (stream) => {
+          audioContext = new AudioContext();
+          microphone = audioContext.createMediaStreamSource(stream);
+          analyser = audioContext.createAnalyser();
+          analyser.smoothingTimeConstant = 0.3;
+          analyser.fftSize = 1024;
+          bufferLength = analyser.frequencyBinCount;
+          dataArray = new Uint8Array(bufferLength);
+          analyser.getByteTimeDomainData(dataArray);
+          console.log(audioContext);
+
+          microphone.connect(analyser);
+
+          function draw() {
+            analyser.getByteTimeDomainData(dataArray);
+
+            let highest = 0;
+            for (var i = 0; i < bufferLength; i++) {
+              if (dataArray[i] > highest)
+                highest = Math.abs(dataArray[i] - 128);
+            }
+            document.getElementById("miclevel").value = highest;
+
+            setTimeout(draw, 250);
+          }
+
+          draw();
+        })
+        .catch((err) => {
+          alert(err);
+        });
+    </script>
+    <input style="font-size: 4em" type="text" id="miclevel" value="0" />
+  </body>
+</html>

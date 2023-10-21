@@ -1,0 +1,40 @@
+FROM rust as builder
+
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    apt-get install -y build-essential && \
+    apt-get install -y curl && \
+    apt-get clean
+
+WORKDIR /container
+
+#Default connect to development, not production
+ENV signalingserver=dev.framevr.io
+ENV region=local
+
+WORKDIR /container/app
+COPY ./rust/ ./
+
+RUN cargo build --release
+
+#runing image
+FROM debian:stable
+
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean
+
+#copy the binary to the container
+COPY --from=builder /container/app/target/release/frame-mediasoup /container/app/frame-mediasoup
+WORKDIR /container/app
+
+RUN chmod +x frame-mediasoup
+ENTRYPOINT ["/bin/bash", "-c", "./frame-mediasoup \
+                                      -a `curl --silent checkip.amazonaws.com` \
+                                      -i false \
+                                      -e true \
+                                      -u ${signalingserver}:1188 \
+                                      -w 4 \
+                                      -t true \
+                                      -r ${region} \
+                                      -p 20000"]

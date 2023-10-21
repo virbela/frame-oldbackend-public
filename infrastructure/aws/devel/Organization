@@ -1,0 +1,30 @@
+<GROUP>
+ - Orchestrates releases with regional 
+    sample using modules
+
+Common (Needed for all regions) 
+ - VPC (and network routing)
+ - DNS updates
+ - ECS Cluster
+ - Cloudwatch log groups
+ - Cloudfront website (mainline and quick)
+ - frontend and backend ssl cert creation and validation
+
+Base ()
+ - IAM Roles
+ - Security group for signaling
+ - Security group for authentication
+ - ECS Service for signaling
+ - ECS Service for authentication
+ - ECS Task for signaling
+ - ECS Task for authentication
+ - EFS Mount
+
+Regional (only setup ingress egress)
+ - Security group for ingress
+ - Security group for egress
+ - ECS Service for ingress
+ - ECS Service for egress
+ - ECS Task for ingress
+ - ECS Task for egress
+ - ECS Autoscaling for egress

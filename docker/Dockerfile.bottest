@@ -1,0 +1,69 @@
+FROM node:16.15.0-bullseye
+
+#Establish working directory
+ARG FUNCTION_DIR="/function"
+RUN mkdir -p ${FUNCTION_DIR}
+WORKDIR ${FUNCTION_DIR}
+
+
+#Handle chromium install
+RUN apt-get update && \
+    apt-get install -y \
+    chromium \
+    g++ \
+    make \
+    cmake \
+    unzip \
+    libcurl4-openssl-dev
+
+
+RUN mkdir -p /.local/share/applications
+RUN touch /.local/share/applications/mimeapps.list
+
+
+#Create entrypoint script for RIE or RIC
+RUN echo '#!/bin/sh \n\
+if [ -z "${AWS_LAMBDA_RUNTIME_API}" ]; then \n\
+  exec /usr/local/bin/aws-lambda-rie /usr/local/bin/npx aws-lambda-ric $@ \n\
+else \n\
+  exec /usr/local/bin/npx aws-lambda-ric $@ \n\
+fi' > /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+#Create package.json
+RUN echo '{ \
+  "name": "bottest", \
+  "version": "1.0.0", \
+  "description": "Runs client-side connections to main service", \
+  "main": "app.js" \
+}' > ${FUNCTION_DIR}/package.json
+
+#Create main task
+RUN echo 'const { execSync } = require("child_process"); \
+exports.handler = async (event, context) => { \
+console.log(`"https://diagnostics.framevr.io/${event.frame}?target=${event.server}&audio=${event.audio}&video=${event.video}&movement=${event.movement}&movementInterval=${event.movementInterval}&transitions=${event.transitions}&toFrame=${event.toFrame}"`); \
+execSync(`chromium \ 
+--headless \
+--single-process \
+--no-sandbox \
+--no-zygote \
+--disable-dev-shm-usage \
+--disable-crash-reporter \
+--disable-gpu \
+--use-fake-ui-for-media-stream \
+--use-fake-device-for-media-stream \
+--autoplay-policy=no-user-gesture-required \
+--remote-debugging-port=9222 \
+--bwsi \
+"https://diagnostics.framevr.io/${event.frame}?target=${event.server}&audio=${event.audio}&video=${event.video}&movement=${event.movement}&movementInterval=${event.movementInterval}&transitions=${event.transitions}&toFrame=${event.toFrame}"`, {stdio: [process.stdin, process.stdout, process.stderr]}); \
+return true; \
+}' > ${FUNCTION_DIR}/app.js
+
+##Install AWS Lambda and RIC and RIE
+RUN npm install aws-lambda-ric
+RUN curl -Lo /usr/local/bin/aws-lambda-rie https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie && \
+    chmod +x /usr/local/bin/aws-lambda-rie
+RUN npm install
+
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD [ "app.handler" ]

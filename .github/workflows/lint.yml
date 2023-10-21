@@ -1,0 +1,44 @@
+name: Lint
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      # the checkout action gives us a preview of the merge, so a soft reset stages the whole PR
+      - name: Restage PR files
+        run: git reset --soft HEAD^ && git status
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install Node.js dependencies (frame folder)
+        run: npm ci
+        working-directory: ./frame
+
+      - name: Run lint-staged (frame folder)
+        run: npx lint-staged
+        working-directory: ./frame
+
+      - name: Install Node.js dependencies (serverless folder)
+        run: npm ci
+        working-directory: ./serverless/functions
+
+      - name: Run lint (serverless folder)
+        run: npm run lint
+        working-directory: ./serverless/functions
