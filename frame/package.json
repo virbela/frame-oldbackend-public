@@ -28,7 +28,6 @@
     "build:library": "node webapp/webpack.js --mode=production --build=library",
     "build:diag": "node webapp/webpack.js --mode=production --build=diag --sourcemaps",
     "build:diag:sourcemaps": "node webapp/webpack.js --mode=production --build=diag --sourcemaps",
-    "build:msteams": "node webapp/webpack.js --mode=development --build=msteams",
     "build:stato": "cross-env STATOSCOPE=TRUE node webapp/webpack.js --mode=production --skipSourcemaps",
     "clean": "rm -rf webapp/dist",
     "clean:all": "rm -rf webapp/dist; rm -rf node_modules; git reset --hard",
@@ -44,10 +43,8 @@
     "dev:webapp": "webpack serve --config ./webapp/webpack.js --mode=development --devtool eval-source-map --color --progress",
     "dev:webapp:library": "webpack serve --config ./webapp/webpack.js --mode=development --devtool eval-source-map --color --entry-reset ./library/index.ts",
     "dev:webapp:quick": "webpack serve --config ./webapp/webpack.js --mode=development --devtool eval-source-map --color --entry-reset ./quick/index.ts ./core/index.js",
-    "dev:msteams": "nodemon bin/api.ts & sleep 5 && node webapp/webpack.js --mode=development --build=msteams --watch",
     "dev:diag": "nodemon -r dotenv/config bin/api.ts dotenv_config_path=../docker/signaling.env & sleep 5 && node webapp/webpack.js --mode=development --build=diag --watch",
     "dev:quick": "nodemon -r dotenv/config bin/api.ts dotenv_config_path=../docker/signaling.env & sleep 5 && node webapp/webpack.js --mode=development --build=quick --watch",
-    "doc": "jsdoc -r -P package.json -R README.md -d doc -c doc/.jsdoc.config api/ bin/ doc/diagrams/ libs/ webapp/babylon/ webapp/core/ webapp/diag/ webapp/msteams/ webapp/stage/ webapp/vue/ webapp/workers/ webapp/mainline/ webapp/quick/",
     "graph": "node webapp/vue/mermaid.js",
     "lint": "eslint --no-error-on-unmatched-pattern ./bin/**/*.{js,ts} ./libs/**/*.{js,ts} ./test/**/*.js ./webapp/{core,babylon,vue,stage,mainline,quick,diag}/**/*.{js,ts,vue,workers}",
     "lint:fix": "eslint --fix --no-error-on-unmatched-pattern ./bin/**/*.{js,ts} ./libs/**/*.{js,ts} ./test/**/*.js ./webapp/{core,babylon,vue,stage,mainline,quick,diag}/**/*.{js,ts,vue,workers}",
@@ -63,9 +60,6 @@
   "dependencies": {
   },
   "devDependencies": {
-  },
-  "msteams": {
-    "teamsAppId": "unknown stuff"
   },
   "nodemonConfig": {
     "watch": [
