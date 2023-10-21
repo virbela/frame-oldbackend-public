@@ -221,15 +221,6 @@ config.plugins.push(
 if (process.env.STATOSCOPE) {
   config.plugins.unshift(new StatoscopeWebpackPlugin());
 }
-//Adjusting configuation based on runtime arguments
-if (argv.build === "msteams") {
-  config.entry = [
-    "./msteams/index.js",
-    "./core/index.js",
-    "./babylon/index.js",
-    "./vue/index.js",
-  ];
-}
 
 if (argv.build === "diag") {
   config.entry = ["./diag/index.ts", "./core/index.js"];
